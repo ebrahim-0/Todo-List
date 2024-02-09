@@ -1,14 +1,31 @@
-import { Route, createBrowserRouter, createRoutesFromElements } from "react-router-dom";
+import {
+  Route,
+  createBrowserRouter,
+  createRoutesFromElements,
+} from "react-router-dom";
 import ProtectedRoute from "../components/auth/ProtectedRoute";
 import PageNotFound from "../pages/PageNotFound";
 import RootLayout from "../pages/Layout";
 import ErrorHandler from "../components/errors/ErrorHandler";
 import HomePage from "../pages";
-import LoginPage from "../pages/Login";
 import RegisterPage from "../pages/Register";
+import LoginPage from "../pages/Login";
+import Cookies from "js-cookie";
 
-const isLoggedIn = false;
-const userData: { email: string } | null = isLoggedIn ? { email: "email@gmail.com" } : null;
+interface IUserData {
+  jwt: string;
+  user: {
+    id: number;
+    username: string;
+    email: string;
+  };
+}
+
+const loggedUser = Cookies.get("loggedUser");
+
+const userData: IUserData = loggedUser
+  ? JSON.parse(loggedUser as string)
+  : null;
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -18,15 +35,44 @@ const router = createBrowserRouter(
         <Route
           index
           element={
-            <ProtectedRoute isAllowed={isLoggedIn} redirectPath="/login" data={userData}>
+            <ProtectedRoute
+              isAllowed={!!userData?.jwt}
+              redirectPath="/login"
+              data={userData}
+            >
               <HomePage />
             </ProtectedRoute>
           }
         />
+
+        <Route
+          path="profile"
+          element={
+            <ProtectedRoute
+              isAllowed={!!userData?.jwt}
+              redirectPath="/login"
+              data={userData}
+            >
+              <p className="text-center">
+                Profile Page
+                <br />
+                <br />
+                <strong>Username:</strong> {userData?.user?.username}
+                <br />
+                <strong>Email:</strong> {userData?.user?.email}
+              </p>
+            </ProtectedRoute>
+          }
+        />
+
         <Route
           path="login"
           element={
-            <ProtectedRoute isAllowed={!isLoggedIn} redirectPath="/" data={userData}>
+            <ProtectedRoute
+              isAllowed={!userData?.jwt}
+              redirectPath="/"
+              data={userData}
+            >
               <LoginPage />
             </ProtectedRoute>
           }
@@ -34,7 +80,11 @@ const router = createBrowserRouter(
         <Route
           path="register"
           element={
-            <ProtectedRoute isAllowed={!isLoggedIn} redirectPath="/login" data={userData}>
+            <ProtectedRoute
+              isAllowed={!userData?.jwt}
+              redirectPath="/login"
+              data={userData}
+            >
               <RegisterPage />
             </ProtectedRoute>
           }

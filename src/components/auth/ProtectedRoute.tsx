@@ -8,7 +8,13 @@ interface IProps {
   data?: unknown;
 }
 
-const ProtectedRoute = ({ isAllowed, redirectPath, children, data }: IProps) => {
+const ProtectedRoute = ({
+  isAllowed,
+  redirectPath,
+  children,
+  data,
+}: IProps) => {
+  console.log(data);
   if (!isAllowed) return <Navigate to={redirectPath} replace state={data} />;
 
   return children;
